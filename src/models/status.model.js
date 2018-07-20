@@ -3,7 +3,11 @@ const Schema = mongoose.Schema
 
 const statusSchema = new Schema({
   text: String,
-  userid: Number,
+  userid: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   in_reply_to_user_id: { type: Number, default: null },
   in_reply_to_tweet_id: { type: Number, default: null },
   restatus_count: {type: Number, default: 0},
