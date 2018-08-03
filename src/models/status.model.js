@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 
 const statusSchema = new Schema({
   text: String,
-  userid: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -15,5 +15,5 @@ const statusSchema = new Schema({
   created_at: { type: Date, default: Date.now }
 })
 
-const Status = mongoose.model('Status', statusSchema)
+const Status = mongoose.model('Status', statusSchema, 'status')
 module.exports = Status

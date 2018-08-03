@@ -1,6 +1,6 @@
 const HttpStatus = require('http-status-codes')
 const User = require('../models/user.model')
-const objectId = require('mongoose').Types.ObjectId
+const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = {
   async createUser (req, res) {
@@ -17,7 +17,7 @@ module.exports = {
   },
   async viewUser (req, res) {
     try {
-      if (!objectId.isValid(req.params.id)) throw new Error('Invalid user id')
+      if (!ObjectId.isValid(req.params.id)) throw new Error('Invalid user id')
       const user = await User.findById(req.params.id).select('-password')
       res.status(HttpStatus.OK).send({'user': user})
     } catch (error) {
