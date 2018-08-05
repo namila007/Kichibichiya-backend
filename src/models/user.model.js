@@ -14,7 +14,8 @@ const userSchema = new Schema({
   username: {
     type: String,
     required: 'username is required',
-    lowercase: true
+    lowercase: true,
+    unique: true
   },
   password: {
     type: String,
@@ -46,11 +47,6 @@ const userSchema = new Schema({
   }
 
 })
-
-// userSchema.path('email').validate(function (email) {
-//   var emailRegex = /^([A-Za-z0-9_\-.+])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/
-//   return emailRegex.test(email.text) // Assuming email has a text attribute
-// }, 'The e-mail field cannot be empty.')
 
 // check email
 userSchema.pre('validate', function (next) {
@@ -84,18 +80,15 @@ userSchema.pre('save', function (next) {
   }
 })
 
-// checking passwords
+// parsing withour password
 userSchema.method({
-  comparePassword (password, callback) {
-    bcrypt.compare(password, this.password, function (err, isTrue) {
-      if (err) return callback(err)
-      callback(null, isTrue)
-    })
-  },
   toJSON () {
     var user = this.toObject()
     delete user.password
     return user
+  },
+  comparePassword (password) {
+    return bcrypt.compareSync(password, this.password)
   }
 })
 
