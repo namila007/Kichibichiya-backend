@@ -24,5 +24,9 @@ module.exports = {
     } catch (error) {
       res.status(HttpStatus.NOT_FOUND).send({'error': error})
     }
+  },
+  async logout (req, res) {
+    req.logout()
+    res.status(HttpStatus.OK).send({message: 'user logout'})
   }
 }

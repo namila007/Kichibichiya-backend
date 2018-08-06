@@ -11,7 +11,9 @@ passport.use(
   },
   async function (jwtPayload, cb) {
     try {
-      const user = await User.findOne({email: jwtPayload.email}).exec()
+      const user = await User
+        .findOne({email: jwtPayload.email}).exec()
+      console.log(user)
       if (!user) return cb(new Error(), false)
       return cb(null, user)
     } catch (err) {
@@ -20,3 +22,15 @@ passport.use(
   }
   )
 )
+
+// passport.serializeUser(function (user, done) {
+//   console.log(user)
+//   done(null, user._id)
+// })
+
+// passport.deserializeUser(function (id, done) {
+//   User.findById(id, function (err, user) {
+//     console.log(user)
+//     done(err, user)
+//   })
+// })

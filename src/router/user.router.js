@@ -9,4 +9,6 @@ router.post('/signup', userController.createUser)
 router.post('/login', authenticationController.login)
 // view user
 router.get('/:id', userController.viewUser)
+// logout
+router.get('/logout', userController.logout)
 module.exports = router

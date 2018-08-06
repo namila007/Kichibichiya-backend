@@ -14,7 +14,10 @@ module.exports = {
   async login (req, res) {
     try {
       const {username, password} = req.body
-      const user = await User.findOne({username: username}).exec()
+      const user = await User
+        .findOne({username: username})
+        .select('-followers -following -created_at -following_count -followers_count -__v -email')
+        .exec()
       if (!user) throw new Error('User not found')
       const validUser = await user.comparePassword(password)
       console.log(user.comparePassword(password))

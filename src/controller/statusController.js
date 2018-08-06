@@ -6,7 +6,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 module.exports = {
   async create (req, res) {
     try {
-      const userid = req.body.userID
+      const userid = req.user._id
       const text = req.body.text
 
       if (!ObjectId.isValid(userid)) throw new Error('Not a valid User')
@@ -46,9 +46,10 @@ module.exports = {
   async deletebyStatusID (req, res) {
     try {
       var statusid = req.params.statusid
+      const user = req.user
       if (!ObjectId.isValid(statusid)) throw new Error('Invalid user id')
       Status
-        .findByIdAndRemove({_id: statusid})
+        .findByIdAndRemove({_id: statusid, userid: user._id})
         .exec(function (err, status) {
           if (err) throw new Error(err)
           if (!status) {
