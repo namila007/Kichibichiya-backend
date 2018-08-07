@@ -3,6 +3,7 @@ const router = express.Router()
 const statusController = require('../controller/statusController')
 const statusOptionController = require('../controller/statusOptionController')
 const isPassportvalid = require('../services/isPassportValid')
+const favouriteController = require('../controller/favouriteController')
 // add a status
 router.post('/update', isPassportvalid, statusController.create)
 // get users status timeline
@@ -16,8 +17,8 @@ router.post('/retweet/:statusid', isPassportvalid, statusOptionController.retwee
 //  delete retweet a status
 router.post('/unretweet/:statusid', isPassportvalid, statusOptionController.unretweet)
 //  fav a status
-router.post('/favourite/:statusid', isPassportvalid, statusOptionController.favourite)
+router.post('/favourite/create', isPassportvalid, favouriteController.create)
 //  delete fav a status
-router.post('/unfavourite/:statusid', isPassportvalid, statusOptionController.unfavourite)
+router.post('/favourite/destroy', isPassportvalid, statusOptionController.unfavourite)
 
 module.exports = router

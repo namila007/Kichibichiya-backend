@@ -16,13 +16,13 @@ module.exports = {
       const {username, password} = req.body
       const user = await User
         .findOne({username: username})
-        .select('-followers -following -created_at -following_count -followers_count -__v -email')
+        // .select('-followers -following -created_at -following_count -followers_count -__v -email')
         .exec()
       if (!user) throw new Error('User not found')
       const validUser = await user.comparePassword(password)
       console.log(user.comparePassword(password))
       if (validUser) {
-        const token = jwtSignUser(user.toJSON())
+        const token = jwtSignUser(user.toJWT())
         res.status(httpstatus.OK).send({user: user.toJSON(), JWTtoken: token})
       } else throw new Error('Incorrect passowrd or Username')
     } catch (err) {

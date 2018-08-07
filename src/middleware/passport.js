@@ -12,8 +12,8 @@ passport.use(
   async function (jwtPayload, cb) {
     try {
       const user = await User
-        .findOne({email: jwtPayload.email}).exec()
-      console.log(user)
+        .findById(jwtPayload._id).exec()
+      // console.log(user)
       if (!user) return cb(new Error(), false)
       return cb(null, user)
     } catch (err) {

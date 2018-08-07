@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const bcrypt = require('bcrypt-nodejs')
 const SALT_FACTOR = 10
+const _ = require('lodash')
 
 // creating schema for user
 const userSchema = new Schema({
@@ -89,6 +90,9 @@ userSchema.method({
   },
   comparePassword (password) {
     return bcrypt.compareSync(password, this.password)
+  },
+  toJWT () {
+    return _.omit(this.toObject(), ['password', 'followers', 'following', 'email', 'created_at', '__v', 'following_count', 'followers_count'])
   }
 })
 
