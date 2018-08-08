@@ -20,15 +20,24 @@ module.exports = {
       console.log(isFav)
       if (!isFav) {
         Status
-          .findByIdAndUpdate(statusid)
+          .findById(statusid)
           .populate({path: 'user', select: '-email -password -followers -following'})
           .exec(function (err, status) {
             if (err) throw new Error()
             status.favourite_count = 1 + status.favourite_count
+            status.save()
             new Favourite({
               user_id: userid, status_id: statusid
             }).save()
-            status.save()
+            status.is_favourited = true
+            res.send({status: status})
+          })
+      } else {
+        Status
+          .findById(statusid)
+          .populate({path: 'user', select: '-email -password -followers -following'})
+          .exec(function (err, status) {
+            if (err) throw new Error()
             status.is_favourited = true
             res.send({status: status})
           })
@@ -38,7 +47,43 @@ module.exports = {
       res.send({error: err.message}).status(HttpStatus.BAD_REQUEST)
     }
   },
-  async unfavourite (req, res) {
+  async destroy (req, res) {
+    try {
+      const statusid = req.body.statusid
+      if (!ObjectId.isValid(statusid)) {
+        throw new Error('Status not found')
+      }
+      const userid = req.user._id
+      var isFav = await Favourite
+        .findOneAndRemove({
+          user_id: userid, status_id: statusid
+        })
+        .exec()
+      if (isFav) {
+        Status
+          .findByIdAndUpdate(statusid)
+          .populate({path: 'user', select: '-email -password -followers -following'})
+          .exec(function (err, status) {
+            if (err) throw new Error()
+            status.favourite_count = status.favourite_count - 1
+            // status.is_favourited = true
+            res.send({status: status})
+          })
+      } else {
+        Status
+          .findById(statusid)
+          .populate({path: 'user', select: '-email -password -followers -following'})
+          .exec(function (err, status) {
+            if (err) throw new Error()
+            res.send({status: status})
+          })
+      }
+    } catch (err) {
+      console.log(err)
+      res.send({error: err.message}).status(HttpStatus.BAD_REQUEST)
+    }
+  },
+  async list (req, res) {
     try {
 
     } catch (err) {

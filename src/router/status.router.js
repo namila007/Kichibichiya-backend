@@ -19,6 +19,6 @@ router.post('/unretweet/:statusid', isPassportvalid, statusOptionController.unre
 //  fav a status
 router.post('/favourite/create', isPassportvalid, favouriteController.create)
 //  delete fav a status
-router.post('/favourite/destroy', isPassportvalid, statusOptionController.unfavourite)
+router.post('/favourite/destroy', isPassportvalid, favouriteController.destroy)
 
 module.exports = router

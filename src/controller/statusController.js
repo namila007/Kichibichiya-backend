@@ -2,6 +2,8 @@ const Status = require('../models/status.model')
 const HttpStatus = require('http-status-codes')
 const User = require('../models/user.model')
 const ObjectId = require('mongoose').Types.ObjectId
+const _ = require('lodash')
+const isFav = require('../services/isFavStatus')
 
 module.exports = {
   async create (req, res) {
@@ -80,11 +82,25 @@ module.exports = {
 
       Status
         .find({user: userid})
-        .populate({path: 'user', select: '-email -password -followers -following'})
+        .populate({path: 'user', select: '-email -password -followers -following', options: { lean: true }})
         .sort({created_at: -1})
-        .exec(function (err, status) {
+        .lean()
+        .exec(async function (err, statuses) {
           if (err) throw new Error(err)
-          res.status(HttpStatus.OK).send({status: status})
+          statuses = await Promise.all(
+            _.map(statuses, async function (status) {
+              var val = await isFav.isFavourited(status._id, userid)
+              if (val) status.is_favourited = true
+              else status.is_favourited = false
+              return status
+            //   return isFav.isFavourited(status._id, userid, status)
+            //     .then(function (res) {
+            //       console.log('ffff')
+            //       return Promise.resolve(res)
+            //     }).catch((err) => { console.error(err) })
+            })
+          )
+          res.status(HttpStatus.OK).send({status: statuses})
         })
     } catch (err) {
       console.log(err)
