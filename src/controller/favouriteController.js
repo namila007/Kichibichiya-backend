@@ -1,10 +1,10 @@
 const Status = require('../models/status.model')
 const HttpStatus = require('http-status-codes')
-// const User = require('../models/user.model')
 const ObjectId = require('mongoose').Types.ObjectId
 const Favourite = require('../models/favourite.model')
 
 module.exports = {
+  // creating a fav
   async create (req, res) {
     try {
       const statusid = req.body.statusid
@@ -17,10 +17,10 @@ module.exports = {
           user_id: userid, status_id: statusid
         })
         .exec()
-      console.log(isFav)
+
       if (!isFav) {
         Status
-          .findById(statusid)
+          .findByIdAndUpdate(statusid)
           .populate({path: 'user', select: '-email -password -followers -following'})
           .exec(function (err, status) {
             if (err) throw new Error()
@@ -29,6 +29,8 @@ module.exports = {
             new Favourite({
               user_id: userid, status_id: statusid
             }).save()
+            // cant lean() and save() . so save doc and then turn to toObject()
+            status = status.toObject()
             status.is_favourited = true
             res.send({status: status})
           })
@@ -36,11 +38,13 @@ module.exports = {
         Status
           .findById(statusid)
           .populate({path: 'user', select: '-email -password -followers -following'})
+          .lean()
           .exec(function (err, status) {
             if (err) throw new Error()
             status.is_favourited = true
             res.send({status: status})
           })
+          .save()
       }
     } catch (err) {
       console.log(err)
@@ -66,15 +70,19 @@ module.exports = {
           .exec(function (err, status) {
             if (err) throw new Error()
             status.favourite_count = status.favourite_count - 1
-            // status.is_favourited = true
+            status.save()
+            status = status.toObject()
+            status.is_favourited = false
             res.send({status: status})
           })
       } else {
         Status
           .findById(statusid)
           .populate({path: 'user', select: '-email -password -followers -following'})
+          .lean()
           .exec(function (err, status) {
             if (err) throw new Error()
+            status.is_favourited = false
             res.send({status: status})
           })
       }

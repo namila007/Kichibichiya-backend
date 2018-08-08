@@ -11,6 +11,8 @@ module.exports = {
       .lean()
       .exec()
       .then((res) => {
+        console.log('res')
+        console.log(res)
         if (res) status.is_favourited = true
         else status.is_favourited = false
         return Promise.resolve(status)

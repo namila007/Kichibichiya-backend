@@ -29,7 +29,6 @@ module.exports = {
     }
   },
   async viewbyStatusID (req, res) {
-    console.log(req.params.statusid)
     var authorizedUser = req.user // authorized user get is_favourited
     try {
       var statusid = req.params.statusid
@@ -37,13 +36,16 @@ module.exports = {
       Status
         .findOne({_id: statusid})
         .populate({path: 'user', select: '-email -password -followers -following'})
-        .exec(function (err, status) {
+        .lean()
+        .exec(async function (err, status) {
           if (err) throw new Error(err)
+          console.log(authorizedUser)
           if (authorizedUser) {
-            statusOptions.isFavourited(authorizedUser._id, status)
+            status = await statusOptions.isFavourited(authorizedUser._id, status)
               .then((res) => {
-                return res
+                return Promise.resolve(res)
               })
+              .catch((err) => new Error(err))
           }
           res.status(HttpStatus.OK).send({status: status})
         })
@@ -56,18 +58,19 @@ module.exports = {
     try {
       var statusid = req.params.statusid
       const user = req.user
-      if (!ObjectId.isValid(statusid)) throw new Error('Invalid user id')
+      if (!ObjectId.isValid(statusid)) throw new Error('Invalid Status')
       Status
-        .findByIdAndRemove({_id: statusid, userid: user._id})
+        .findOneAndRemove({_id: statusid, user: user._id})
         .exec(function (err, status) {
           if (err) throw new Error(err)
+          console.log(status)
           if (!status) {
-            res.status(HttpStatus.NOT_FOUND).send({'error': 'status not found'})
+            res.status(HttpStatus.NOT_FOUND).send({'error': 'status not found or not the Owner of the status'})
           } else res.status(HttpStatus.OK).send({status: status})
         })
     } catch (err) {
       console.log(err)
-      res.send({error: err.message}).status(HttpStatus.BAD_REQUEST)
+      res.status(HttpStatus.BAD_REQUEST).send({error: err.message})
     }
   },
   async viewUserTL (req, res) {
@@ -98,7 +101,7 @@ module.exports = {
           if (authorizedUser) {
             statuses = await Promise.all(
               _.map(statuses, async function (status) {
-                return statusOptions.isFavourited(userid, status)
+                return statusOptions.isFavourited(authorizedUser._id, status)
                   .then((res) => {
                     return res
                   })
