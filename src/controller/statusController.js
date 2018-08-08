@@ -3,7 +3,7 @@ const HttpStatus = require('http-status-codes')
 const User = require('../models/user.model')
 const ObjectId = require('mongoose').Types.ObjectId
 const _ = require('lodash')
-const isFav = require('../services/isFavStatus')
+const statusOptions = require('../services/statusOptions')
 
 module.exports = {
   async create (req, res) {
@@ -30,6 +30,7 @@ module.exports = {
   },
   async viewbyStatusID (req, res) {
     console.log(req.params.statusid)
+    var authorizedUser = req.user // authorized user get is_favourited
     try {
       var statusid = req.params.statusid
       if (!ObjectId.isValid(statusid)) throw new Error('Invalid user id')
@@ -38,6 +39,12 @@ module.exports = {
         .populate({path: 'user', select: '-email -password -followers -following'})
         .exec(function (err, status) {
           if (err) throw new Error(err)
+          if (authorizedUser) {
+            statusOptions.isFavourited(authorizedUser._id, status)
+              .then((res) => {
+                return res
+              })
+          }
           res.status(HttpStatus.OK).send({status: status})
         })
     } catch (err) {
@@ -65,6 +72,7 @@ module.exports = {
   },
   async viewUserTL (req, res) {
     var userid
+    var authorizedUser = req.user // only for autho user
     try {
       if (req.query.userid) {
         userid = req.query.userid
@@ -87,19 +95,16 @@ module.exports = {
         .lean()
         .exec(async function (err, statuses) {
           if (err) throw new Error(err)
-          statuses = await Promise.all(
-            _.map(statuses, async function (status) {
-              var val = await isFav.isFavourited(status._id, userid)
-              if (val) status.is_favourited = true
-              else status.is_favourited = false
-              return status
-            //   return isFav.isFavourited(status._id, userid, status)
-            //     .then(function (res) {
-            //       console.log('ffff')
-            //       return Promise.resolve(res)
-            //     }).catch((err) => { console.error(err) })
-            })
-          )
+          if (authorizedUser) {
+            statuses = await Promise.all(
+              _.map(statuses, async function (status) {
+                return statusOptions.isFavourited(userid, status)
+                  .then((res) => {
+                    return res
+                  })
+              })
+            )
+          }
           res.status(HttpStatus.OK).send({status: statuses})
         })
     } catch (err) {
