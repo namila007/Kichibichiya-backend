@@ -12,7 +12,7 @@ router.get('/user_timeline', publicStatus, statusController.viewUserTL)
 // get status
 router.get('/show/:statusid', publicStatus, statusController.viewbyStatusID)
 // delete status
-router.post('/delete/:statusid', isPassportvalid, statusController.deletebyStatusID)
+router.delete('/delete/:statusid', isPassportvalid, statusController.deletebyStatusID)
 //  retweet a status
 router.post('/retweet/:statusid', isPassportvalid, statusOptionController.retweet)
 //  delete retweet a status
@@ -20,7 +20,7 @@ router.post('/unretweet/:statusid', isPassportvalid, statusOptionController.unre
 //  fav a status
 router.post('/favourite/create', isPassportvalid, favouriteController.create)
 //  delete fav a status
-router.post('/favourite/destroy', isPassportvalid, favouriteController.destroy)
+router.delete('/favourite/destroy', isPassportvalid, favouriteController.destroy)
 //  get fav list of a user, authorized user get is_favourited
 router.get('/favourite/list', publicStatus, favouriteController.list)
 

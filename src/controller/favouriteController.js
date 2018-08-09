@@ -3,8 +3,6 @@ const HttpStatus = require('http-status-codes')
 const User = require('../models/user.model')
 const ObjectId = require('mongoose').Types.ObjectId
 const _ = require('lodash')
-// const statusOptions = require('../services/statusOptions')
-
 const Favourite = require('../models/favourite.model')
 
 module.exports = {

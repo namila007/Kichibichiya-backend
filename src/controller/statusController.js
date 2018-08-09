@@ -4,6 +4,7 @@ const User = require('../models/user.model')
 const ObjectId = require('mongoose').Types.ObjectId
 const _ = require('lodash')
 const statusOptions = require('../services/statusOptions')
+const Favourite = require('../models/favourite.model')
 
 module.exports = {
   async create (req, res) {
@@ -39,7 +40,6 @@ module.exports = {
         .lean()
         .exec(async function (err, status) {
           if (err) throw new Error(err)
-          console.log(authorizedUser)
           if (authorizedUser) {
             status = await statusOptions.isFavourited(authorizedUser._id, status)
               .then((res) => {
@@ -64,12 +64,13 @@ module.exports = {
         .exec(function (err, status) {
           if (err) throw new Error(err)
           console.log(status)
-          if (!status) {
-            res.status(HttpStatus.NOT_FOUND).send({'error': 'status not found or not the Owner of the status'})
-          } else res.status(HttpStatus.OK).send({status: status})
+          if (!status) throw new Error('status not found or not the Owner of the status')
+          else {
+            Favourite.remove({status_id: status._id}).exec()
+            res.status(HttpStatus.OK).send({status: status})
+          }
         })
     } catch (err) {
-      console.log(err)
       res.status(HttpStatus.BAD_REQUEST).send({error: err.message})
     }
   },
