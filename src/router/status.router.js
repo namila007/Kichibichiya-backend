@@ -21,5 +21,7 @@ router.post('/unretweet/:statusid', isPassportvalid, statusOptionController.unre
 router.post('/favourite/create', isPassportvalid, favouriteController.create)
 //  delete fav a status
 router.post('/favourite/destroy', isPassportvalid, favouriteController.destroy)
+//  get fav list of a user, authorized user get is_favourited
+router.get('/favourite/list', publicStatus, favouriteController.list)
 
 module.exports = router

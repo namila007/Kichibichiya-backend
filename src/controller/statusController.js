@@ -89,6 +89,7 @@ module.exports = {
           .exec()
       } else {
         res.status(HttpStatus.BAD_REQUEST).send({'error': 'must add username or userid'})
+        return
       }
 
       Status

@@ -8,7 +8,7 @@ router.post('/signup', userController.createUser)
 // login
 router.post('/login', authenticationController.login)
 // view user
-router.get('/:id', userController.viewUser)
+router.get('/:username', userController.viewUser)
 // logout
 router.get('/logout', userController.logout)
 module.exports = router
