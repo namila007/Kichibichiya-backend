@@ -45,6 +45,10 @@ const userSchema = new Schema({
   followers_count: {
     type: Number,
     default: null
+  },
+  name: {
+    type: String,
+    lowercase: true
   }
 
 })
@@ -84,9 +88,13 @@ userSchema.pre('save', function (next) {
 // parsing withour password
 userSchema.method({
   toJSON () {
-    var user = this.toObject()
-    delete user.password
-    return user
+    try {
+      var user = this.toObject()
+      delete user.password
+      return user
+    } catch (err) {
+      return err
+    }
   },
   comparePassword (password) {
     return bcrypt.compareSync(password, this.password)
