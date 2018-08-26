@@ -65,6 +65,7 @@ module.exports = {
           user_id: userid, status_id: statusid
         })
         .exec()
+      console.log(isFav)
       if (isFav) {
         Status
           .findByIdAndUpdate(statusid)

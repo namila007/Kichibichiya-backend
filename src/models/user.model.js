@@ -49,6 +49,10 @@ const userSchema = new Schema({
   name: {
     type: String,
     lowercase: true
+  },
+  avatar: {
+    type: String,
+    default: 'https://png.icons8.com/color/100/user.png'
   }
 
 })
@@ -88,13 +92,12 @@ userSchema.pre('save', function (next) {
 // parsing withour password
 userSchema.method({
   toJSON () {
-    try {
-      var user = this.toObject()
-      delete user.password
-      return user
-    } catch (err) {
-      return err
-    }
+    if (!this) throw new Error()
+    var user = this.toObject()
+    delete user.followers
+    delete user.following
+    delete user.password
+    return user
   },
   comparePassword (password) {
     return bcrypt.compareSync(password, this.password)
