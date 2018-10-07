@@ -2,6 +2,9 @@ const Status = require('../models/status.model')
 const HttpStatus = require('http-status-codes')
 const User = require('../models/user.model')
 const ObjectId = require('mongoose').Types.ObjectId
+const _ = require('lodash')
+const statusOptions = require('../services/statusOptions')
+const Favourite = require('../models/favourite.model')
 
 module.exports = {
   async create (req, res) {
@@ -27,15 +30,23 @@ module.exports = {
     }
   },
   async viewbyStatusID (req, res) {
-    console.log(req.params.statusid)
+    var authorizedUser = req.user // authorized user get is_favourited
     try {
       var statusid = req.params.statusid
       if (!ObjectId.isValid(statusid)) throw new Error('Invalid user id')
       Status
         .findOne({_id: statusid})
         .populate({path: 'user', select: '-email -password -followers -following'})
-        .exec(function (err, status) {
+        .lean()
+        .exec(async function (err, status) {
           if (err) throw new Error(err)
+          if (authorizedUser) {
+            status = await statusOptions.isFavourited(authorizedUser._id, status)
+              .then((res) => {
+                return Promise.resolve(res)
+              })
+              .catch((err) => new Error(err))
+          }
           res.status(HttpStatus.OK).send({status: status})
         })
     } catch (err) {
@@ -47,22 +58,25 @@ module.exports = {
     try {
       var statusid = req.params.statusid
       const user = req.user
-      if (!ObjectId.isValid(statusid)) throw new Error('Invalid user id')
+      if (!ObjectId.isValid(statusid)) throw new Error('Invalid Status')
       Status
-        .findByIdAndRemove({_id: statusid, userid: user._id})
+        .findOneAndRemove({_id: statusid, user: user._id})
         .exec(function (err, status) {
           if (err) throw new Error(err)
-          if (!status) {
-            res.status(HttpStatus.NOT_FOUND).send({'error': 'status not found'})
-          } else res.status(HttpStatus.OK).send({status: status})
+          console.log(status)
+          if (!status) throw new Error('status not found or not the Owner of the status')
+          else {
+            Favourite.remove({status_id: status._id}).exec()
+            res.status(HttpStatus.OK).send({status: status})
+          }
         })
     } catch (err) {
-      console.log(err)
-      res.send({error: err.message}).status(HttpStatus.BAD_REQUEST)
+      res.status(HttpStatus.BAD_REQUEST).send({error: err.message})
     }
   },
   async viewUserTL (req, res) {
     var userid
+    var authorizedUser = req.user // only for autho user
     try {
       if (req.query.userid) {
         userid = req.query.userid
@@ -76,15 +90,27 @@ module.exports = {
           .exec()
       } else {
         res.status(HttpStatus.BAD_REQUEST).send({'error': 'must add username or userid'})
+        return
       }
 
       Status
         .find({user: userid})
-        .populate({path: 'user', select: '-email -password -followers -following'})
+        .populate({path: 'user', select: '-email -password -followers -following', options: { lean: true }})
         .sort({created_at: -1})
-        .exec(function (err, status) {
+        .lean()
+        .exec(async function (err, statuses) {
           if (err) throw new Error(err)
-          res.status(HttpStatus.OK).send({status: status})
+          if (authorizedUser) {
+            statuses = await Promise.all(
+              _.map(statuses, async function (status) {
+                return statusOptions.isFavourited(authorizedUser._id, status)
+                  .then((res) => {
+                    return res
+                  })
+              })
+            )
+          }
+          res.status(HttpStatus.OK).send({status: statuses})
         })
     } catch (err) {
       console.log(err)

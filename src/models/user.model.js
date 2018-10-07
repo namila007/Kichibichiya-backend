@@ -45,6 +45,14 @@ const userSchema = new Schema({
   followers_count: {
     type: Number,
     default: null
+  },
+  name: {
+    type: String,
+    lowercase: true
+  },
+  avatar: {
+    type: String,
+    default: 'https://png.icons8.com/color/100/user.png'
   }
 
 })
@@ -84,7 +92,10 @@ userSchema.pre('save', function (next) {
 // parsing withour password
 userSchema.method({
   toJSON () {
+    if (!this) throw new Error()
     var user = this.toObject()
+    delete user.followers
+    delete user.following
     delete user.password
     return user
   },

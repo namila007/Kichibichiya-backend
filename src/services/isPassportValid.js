@@ -7,7 +7,7 @@ module.exports = function (req, res, next) {
         error: 'not authorized'
       })
     } else {
-      req.user = user
+      req.user = user.toJSON()
       next()
     }
   })(req, res, next)
