@@ -18,7 +18,9 @@ app.use(passport.session())
 require('./middleware/passport')
 
 app.use('/api', router)
-mongoose.connect(config.mongo, { useNewUrlParser: true })
+mongoose.connect(config.mongo, { useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true})
 
 app.listen(config.port)
 
