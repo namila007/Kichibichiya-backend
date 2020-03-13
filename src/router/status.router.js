@@ -5,7 +5,25 @@ const statusOptionController = require('../controller/statusOptionController')
 const isPassportvalid = require('../services/isPassportValid')
 const publicStatus = require('../services/publicStatus')
 const favouriteController = require('../controller/favouriteController')
-// add a status
+
+/**
+ * @swagger
+ * tags:
+ *   name: Status
+ *   description: Status management
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /update/:
+ *  post:
+ *    summary: adding a new tweet
+ * tags: [Status]
+ * responses:
+ *       200:
+ *         description: hello world
+ */
 router.post('/update', isPassportvalid, statusController.create)
 // get users status timeline
 router.get('/user_timeline', publicStatus, statusController.viewUserTL)
